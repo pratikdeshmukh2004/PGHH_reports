@@ -4,7 +4,7 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email import encoders
 import dotenv
-import os
+import os, traceback
 
 # Load environment variables
 dotenv.load_dotenv()
@@ -50,6 +50,7 @@ def send_email(subject, receiver, body, files, cc=[]):
             print(f"Email sent to {receiver} with CC to {', '.join(cc)}")
             return True
     except Exception as e:
+        print(traceback.format_exc())
         print(subject, receiver, body, files, cc)
         print(f"Failed to send email: {e}")
         return False
