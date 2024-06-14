@@ -15,8 +15,10 @@ smtp_port = 587
 sender_email = os.getenv("SENDER_EMAIL")
 password = os.getenv("SENDER_PASSWORD")  # Use an App Password for Gmail if 2FA is enabled.
 
+
 def send_email(subject, receiver, body, files, cc=[]):
     # Create the Email
+    print(sender_email, password)
     message = MIMEMultipart()
     message['From'] = sender_email
     message['To'] = receiver
