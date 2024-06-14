@@ -1,0 +1,33 @@
+name: Run Daily Energy Consumption Report
+
+# Schedule to run at midnight UTC
+on:
+  schedule:
+    - cron: "0 0 * * *"  # Runs every day at 00:00 UTC
+
+  # Allows you to manually trigger the workflow
+  workflow_dispatch:
+
+jobs:
+  run-daily-report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'  # Use the version your script requires
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt  # Ensure your dependencies are listed here
+
+    - name: Run the Python script
+      env:
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+      run: python your_script.py  # Replace with the actual name of your script file
