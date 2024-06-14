@@ -106,7 +106,7 @@ def get_kwh_fot_today_UID(uuid):
 
 def main():
     try:
-        data = get_UIDs()[-10:]
+        data = get_UIDs()
         kwh_data = [["Date", "Ward No", "Area Code", "Location Name", "SLC UID", "Connected Load KWH", "Operating Time", "Baseline KWH", "Adjusted Baseline KWH", "Actual Consuption KWH", "Actual Energy Savings KWH", "Actual Energy Savings %"]]
         with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
             result = executor.map(get_kwh_fot_today_UID, data)
