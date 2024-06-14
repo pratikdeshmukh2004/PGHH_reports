@@ -77,30 +77,36 @@ def get_operating_hours(uuid):
     return {"UID": uuid['UID'], "operating_hours": time_difference.total_seconds() / 3600}
 
 def get_kwh_fot_today_UID(uuid):
-    uid = str(uuid['UID']).split("-")[-1].strip()
-    print("Fetching:", uid)
-    url = f"https://www.powerz.in/powerz/kwhreports/rptdaily.php?page=m&elw=1&mid={uid}&savedailytarget=1"
-    currentweekval = get_current_week()
-    payload = f'groupid=&meteridsel=1001&curweekval={currentweekval}&showfullmonth=1&dailytarget=10.00&topframedatabase=pithampur&frmclientid=pithampur&topframeusername=abhi&topframeuserid=8&topframeaccessrights=NYYYYNYNNNYNNYYNNNNNNNNNN&defaultlandingpage=&topframecustomer='
-    response = requests.request("POST", url, headers=headers, data=payload)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    table = soup.find('table')
-    rows = table.find_all('tr')
-    data = {}
-    for row in rows:
-        cols = row.find_all('td')
-        if len(cols) == 0:
-            continue
-        row_date = datetime.strptime(cols[0].text, "%a %d/%m/%Y")
-        if row_date.date() == today:
-            data = {"UID": uuid['UID'], "KWH": float(cols[-1].text)}
-            break
-    print("Done:", uid)
-    return data
+        uid = str(uuid['UID']).split("-")[-1].strip()
+        print("Fetching:", uid)
+        url = f"https://www.powerz.in/powerz/kwhreports/rptdaily.php?page=m&elw=1&mid={uid}&savedailytarget=1"
+        currentweekval = get_current_week()
+        payload = f'groupid=&meteridsel=1001&curweekval={currentweekval}&showfullmonth=1&dailytarget=10.00&topframedatabase=pithampur&frmclientid=pithampur&topframeusername=abhi&topframeuserid=8&topframeaccessrights=NYYYYNYNNNYNNYYNNNNNNNNNN&defaultlandingpage=&topframecustomer='
+        response = requests.request("POST", url, headers=headers, data=payload)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        try:
+            table = soup.find('table')
+            rows = table.find_all('tr')
+            data = {}
+            for row in rows:
+                cols = row.find_all('td')
+                if len(cols) == 0:
+                    continue
+                row_date = datetime.strptime(cols[0].text, "%a %d/%m/%Y")
+                if row_date.date() == today:
+                    data = {"UID": uuid['UID'], "KWH": float(cols[-1].text)}
+                    break
+            print("Done:", uid)
+            return data
+        except Exception as e:
+            print(e)
+            print("Error:", uuid)
+            print(response.text)
+            return {"UID": uuid['UID'], "KWH": 0}
 
 def main():
     try:
-        data = get_UIDs()
+        data = get_UIDs()[-10:]
         kwh_data = [["Date", "Ward No", "Area Code", "Location Name", "SLC UID", "Connected Load KWH", "Operating Time", "Baseline KWH", "Adjusted Baseline KWH", "Actual Consuption KWH", "Actual Energy Savings KWH", "Actual Energy Savings %"]]
         with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
             result = executor.map(get_kwh_fot_today_UID, data)
@@ -143,6 +149,6 @@ def main():
     except Exception as e:
         err = traceback.format_exc()
         print(err)
-        send_email("Error in Energy Consumption Report", "pratikdeshmukhlobhi@gmail.com", f"""Hello,\n\nThere was an error in generating the Energy Consumption Report for {today}.\n\n{err}\n\nBest regards,\nPratik Automation AI""", [])
+        send_email("Error in Energy Consumption Report", "pratikdeshmukhlobhi@gmail.com", f"""Hello,\n\nThere was an error in generating the Energy Consumption Report for {today}.\n\n{str(err)}\n\nBest regards,\nPratik Automation AI""", [])
 main()
 # get_operating_hours("1001")
