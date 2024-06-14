@@ -30,4 +30,4 @@ jobs:
       env:
         SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-      run: python your_script.py  # Replace with the actual name of your script file
+      run: python app.py  # Replace with the actual name of your script file
