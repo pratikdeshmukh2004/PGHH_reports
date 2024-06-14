@@ -7,7 +7,7 @@ import concurrent.futures, csv
 from mail import send_email
 import traceback, os
 
-today = date.today() - timedelta(days=1)
+today = date.today()
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     'accept-language': 'en-US,en;q=0.8',

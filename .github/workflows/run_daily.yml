@@ -1,9 +1,9 @@
 name: Run Daily Energy Consumption Report
 
-# Schedule to run at midnight UTC
+# Schedule to run at 18:30 UTC, which is equivalent to 00:00 IST
 on:
   schedule:
-    - cron: "0 0 * * *"  # Runs every day at 00:00 UTC
+    - cron: "30 18 * * *"  # Runs every day at 18:30 UTC, which is 00:00 IST
 
   # Allows you to manually trigger the workflow
   workflow_dispatch:

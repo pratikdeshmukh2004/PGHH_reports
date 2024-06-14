@@ -18,7 +18,6 @@ password = os.getenv("SENDER_PASSWORD")  # Use an App Password for Gmail if 2FA 
 
 def send_email(subject, receiver, body, files, cc=[]):
     # Create the Email
-    print(sender_email, password, 'creds.....')
     message = MIMEMultipart()
     message['From'] = sender_email
     message['To'] = receiver
