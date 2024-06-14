@@ -16,15 +16,6 @@ sender_email = os.getenv("SENDER_EMAIL")
 password = os.getenv("SENDER_PASSWORD")  # Use an App Password for Gmail if 2FA is enabled.
 
 def send_email(subject, receiver, body, files, cc=[]):
-    """
-    Sends an email with the specified subject, body, and attachments to the receiver, with optional CC.
-
-    :param subject: Subject of the email
-    :param receiver: Main recipient's email address
-    :param body: Body of the email
-    :param files: List of file paths to attach
-    :param cc: List of CC email addresses (optional)
-    """
     # Create the Email
     message = MIMEMultipart()
     message['From'] = sender_email
@@ -59,5 +50,6 @@ def send_email(subject, receiver, body, files, cc=[]):
             print(f"Email sent to {receiver} with CC to {', '.join(cc)}")
             return True
     except Exception as e:
+        print(subject, receiver, body, files, cc)
         print(f"Failed to send email: {e}")
         return False
