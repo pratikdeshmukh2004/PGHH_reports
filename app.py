@@ -119,6 +119,8 @@ def main():
             operating_hour = list(filter(lambda x: x['UID'] == result['UID'], operating_hours_list))[0]['operating_hours']
             baseline = float(uid_data['Certified Baseline in kwh'])/11*operating_hour
             saved = baseline - float(result['KWH'])
+            saved = 1 if saved <= 0 else saved
+            baseline = 1 if baseline <= 0 else baseline
             kwh_data.append([
                 today,
                 "NP",
@@ -151,4 +153,3 @@ def main():
         print(err)
         send_email("Error in Energy Consumption Report", "pratikdeshmukhlobhi@gmail.com", f"""Hello,\n\nThere was an error in generating the Energy Consumption Report for {today}.\n\n{str(err)}\n\nBest regards,\nPratik Automation AI""", [])
 main()
-# get_operating_hours("1001")
