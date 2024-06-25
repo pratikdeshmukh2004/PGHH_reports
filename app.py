@@ -7,7 +7,7 @@ import concurrent.futures, csv
 from mail import send_email
 import traceback, os
 
-today = date.today()
+today = date.today() - timedelta(days=1)
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     'accept-language': 'en-US,en;q=0.8',
@@ -104,23 +104,41 @@ def get_kwh_fot_today_UID(uuid):
             print(response.text)
             return {"UID": uuid['UID'], "KWH": 0}
 
+def get_burning_load(uuid):
+    uid = str(uuid['UID']).split("-")[-1].strip()
+    print("Fetching burning load:", uid)
+    url = f"https://www.powerz.in/powerz/kwhreports/showcurrentreading.php?paramselect=-1&datevalfrom={today}%2000:00:00&datevalto={today}%2023:59:59&meter_primary_id={uid}&db=pithampur&_=1718957168715"
+    response = requests.get(url, headers=headers)
+    burnings = response.json()['data']
+    burning_list = [0]
+    for burning in burnings:
+        try:
+            burning_list.append(float(burning[-4])/1000)
+        except:
+            pass
+    return {"UID": uuid['UID'], "burning_load": max(burning_list)}
+
 def main():
     try:
         data = get_UIDs()
-        kwh_data = [["Date", "Ward No", "Area Code", "Location Name", "SLC UID", "Connected Load KWH", "Operating Time", "Baseline KWH", "Adjusted Baseline KWH", "Actual Consuption KWH", "Actual Energy Savings KWH", "Actual Energy Savings %"]]
+        kwh_data = [["Date", "Ward No", "Area Code", "Location Name", "SLC UID", "Connected Load KWH", "Operating Time (HH:MM)", "Operating Time (In Decimal)", "Operating Time (%)", "Base Load (kW)", "Burning Load (kW)", "Correction Factor", "Baseline (kWh)", "Adjusted Baseline KWH", "Actual Consuption KWH", "Actual Energy Savings KWH", "Actual Energy Savings %"]]
         with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
             result = executor.map(get_kwh_fot_today_UID, data)
         results = list(result)
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             result = executor.map(get_operating_hours, data)
         operating_hours_list = list(result)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            result = executor.map(get_burning_load, data)
+        burning_load_list = list(result)
         for result in results:
             uid_data = list(filter(lambda x: x['UID'] == result['UID'], data))[0]
             operating_hour = list(filter(lambda x: x['UID'] == result['UID'], operating_hours_list))[0]['operating_hours']
-            baseline = float(uid_data['Certified Baseline in kwh'])/11*operating_hour
+            operating_time_percentage = operating_hour/12
+            burning_load = list(filter(lambda x: x['UID'] == result['UID'], burning_load_list))[0]['burning_load']
+            correction_factor = burning_load/float(uid_data['Connected Load in kw'])
+            baseline = float(uid_data['Certified Baseline in kwh'])*correction_factor*operating_time_percentage
             saved = baseline - float(result['KWH'])
-            saved = 1 if saved <= 0 else saved
-            baseline = 1 if baseline <= 0 else baseline
             kwh_data.append([
                 today,
                 "NP",
@@ -128,12 +146,17 @@ def main():
                 uid_data["Location"],
                 result['UID'],
                 uid_data['Connected Load in kw'],
-                str(int(operating_hour)) + ":"+ str(int((operating_hour%1)*60))+":00",
+                str(int(operating_hour)) + ":"+ str(int((operating_hour%1)*60)),
+                operating_hour,
+                operating_time_percentage,
+                uid_data['Connected Load in kw'],
+                burning_load,
+                correction_factor,
                 uid_data['Certified Baseline in kwh'],
                 baseline,
                 result['KWH'],
                 saved,
-                saved*100/baseline
+                (saved if saved > 0 else 1)/(baseline if baseline > 0 else 1)
             
             ])
         areas = set(list(map(lambda x: x[2], kwh_data[1:])))
@@ -141,7 +164,7 @@ def main():
         for area in areas: 
             filename = f"{area}_{today}.csv"   
             files.append(filename) 
-            area_data = list(filter(lambda x: x[2] == area, kwh_data))
+            area_data = list(filter(lambda x: x[2] == area or kwh_data.index(x) == 0, kwh_data))
             if len(area_data) == 0:
                 continue
             with open(filename, mode='w', newline='') as file:
