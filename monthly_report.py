@@ -143,7 +143,7 @@ def get_monthly_consumption(uuid):
 
 def send_monthly_report():
     try:
-        data = get_UIDs()[:2]
+        data = get_UIDs()
         _, days_in_month = monthrange(today.year, today.month)
         kwh_data = [["Date", "Ward No", "Area Code", "Location Name", "SLC UID", "Connected Load (kW)", "Operating Time (HH:MM)", "Operating Time (In Decimal)", "Operating Time (%)", "Base Load (kW)", "Burning Load (kW)", "Correction Factor", "Baseline (kWh)", "Adjusted Baseline (kWh)", "Actual Consumption (kWh)", "Actual Energy Savings (kWh)","Actual Energy Savings (%)"]]
         kwh_data2 = [["Area Code",'Connected Load (kW)', 'Baseline (kWh)', 'Adjusted Baseline (kWh)', 'Actual Consumption (kWh)', 'Actual Energy Savings (kWh)', 'Actual Energy Savings (%)', 'Allocated Energy Savings (kWh)', 'Additional Energy Savings (kWh)']]
