@@ -1,15 +1,15 @@
-name: Run Daily Energy Consumption Report
+name: Run Monthly Energy Consumption Report
 
-# Schedule to run at 18:30 UTC, which is equivalent to 00:00 IST
+# Schedule to run at 18:30 UTC, which is equivalent to 00:00 IST on the 1st day of each month
 on:
   schedule:
-    - cron: "30 18 * * *"  # Runs every day at 18:30 UTC, which is 00:00 IST
+    - cron: "30 18 1 * *"  # Runs on the 1st of every month at 18:30 UTC, which is 00:00 IST
 
   # Allows you to manually trigger the workflow
   workflow_dispatch:
 
 jobs:
-  run-daily-report:
+  run-monthly-report:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,4 +30,4 @@ jobs:
       env:
         SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
-      run: python daily_report.py  # Replace with the actual name of your script file
+      run: python monthly_report.py  # Replace with the actual name of your script file
