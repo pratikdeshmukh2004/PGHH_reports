@@ -8,7 +8,8 @@ from mail import send_email
 import traceback, os, json
 from calendar import monthrange
 
-today = date.today()
+today = date.today() - timedelta(days=12)
+print(today, 'today...')
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
